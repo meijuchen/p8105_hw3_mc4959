@@ -5,11 +5,11 @@ date: "10/8/2020"
 output: github_document
 ---
 
-```{r setup, inslude = False}
+```{r setup, inslude = FALSE}
 library(tidyverse)
 library(p8105.datasets)
 
-knitr::opts_chunck$set(
+knitr::opts_chunk$set(
   fig.width = 6,
   fig.asp = .6,
   out.eidth = "90%"
@@ -25,5 +25,7 @@ options(
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
+
+
 
 
