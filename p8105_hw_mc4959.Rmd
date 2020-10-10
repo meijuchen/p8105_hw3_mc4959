@@ -5,7 +5,7 @@ date: "10/8/2020"
 output: github_document
 ---
 
-```{r setup, inslude = FALSE}
+```{r setup, include = FALSE}
 library(tidyverse)
 library(p8105.datasets)
 
@@ -25,6 +25,7 @@ options(
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
+
 
 
 
