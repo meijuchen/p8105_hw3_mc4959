@@ -154,6 +154,99 @@ accel_df %>%
 It seems that the person is more active around 10-12am, while less active at other time periods on Sundays in the week. Also, the person is active at Friday and Saturday nights.
 
 
+## Problem 3
+
+```{r}
+data("ny_noaa")
+```
+This dataset has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, containing weather information collected by New York State weather stations. 
+The variables include: weather station id, observation date, precipitation, snowfall, snow depth and maximum and minimum of temperature. There are a lot of missing values, especially for the maximum temperatures and minimum temperatures. However, we have a large number of observations available, so this will not be a big issue.
+
+
+##### Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units.
+
+```{r}
+weather_df = 
+  mutate(ny_noaa,
+         tmin = as.numeric(tmin),
+         tmax = as.numeric(tmax),
+         prcp = as.numeric(prcp)) %>% 
+  mutate(tmin = tmin / 10,
+         tmax = tmax / 10,
+         prcp = prcp / 10) %>% 
+  separate(date, into = c("year", "month", "day"), sep = "-" ) 
+weather_df %>% 
+  count(snow) %>%
+  mutate(rank = min_rank(n))
+```
+
+* "0" is the most observed value. Because there is no snow fall in most days in a year in New York.
+
+
+##### Make a two-panel plot. Show the average max temperature in January and in July in each station across years.
+
+```{r}
+weather_df %>% 
+  filter(month %in% c("01", "07")) %>% 
+  group_by(id, year, month) %>%
+  summarise(mean_tmax = mean(tmax, na.rm = TRUE)) %>% 
+  ggplot(aes(x = year, y = mean_tmax, group = id, color = id)) +
+  geom_point(alpha = 0.5) + 
+  geom_path() +
+  facet_grid(. ~ month) +
+  theme(
+    axis.text = element_text(
+      angle = 90, vjust = 0.5, hjust = 1
+      ),legend.position = "none")
+```
+
+* The maximum temperatures fluctuated in both January and July across the years, and the fluctuation is larger in January. 
+* In 1994 and 2004, the max temperatures in January is lower than usual.
+* There are outliers in January in 1982, 2004 and 2005, and in July in 1984 and 2004.
+
+
+##### Make another two-panel plot. (i) show tmax vs tmin; and (ii) s the distribution of snowfall values greater than 0 and less than 100 separately by year.
+
+```{r}
+library(p8105.datasets)
+library(patchwork)
+```
+
+
+```{r}
+tmax_tmin_plot =
+weather_df %>% 
+  ggplot(aes(x = tmax, y = tmin)) + 
+  geom_hex() +
+  theme(legend.position = "bottom",
+        legend.text = element_text(angle = 60, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Temperature plot",
+    x = "Minimum temperature (C)",
+    y = "Maxiumum temperature (C)"
+  )
+```
+
+
+```{r}
+snow_distribution_plot =
+weather_df %>% 
+  filter(snow > 0, snow < 100) %>% 
+  ggplot(aes(x = year, y = snow)) + 
+  geom_violin(aes(fill = year), alpha = .5) +
+  stat_summary(fun = "median", color = "blue") +
+  theme(axis.text = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        legend.position = "none")
+  labs(
+    title = "Snowfall distribution plot",
+    x = "snowfall (mm)") 
+  
+```
+
+
+```{r, fig.height=20}
+tmax_tmin_plot / snow_distribution_plot
+```
 
 
 
