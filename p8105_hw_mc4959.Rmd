@@ -59,7 +59,8 @@ instacart %>%
   theme(axis.text = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
 
-##### Make a table. Show the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
+##### Make a table. 
+Show the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
 
 ```{r, echo=FALSE}
 instacart %>% 
@@ -85,6 +86,74 @@ instacart %>%
 		values_from = mean_hour
 	)
 ```
+
+
+
+## Problem 2
+
+##### Load, tidy, and otherwise wrangle the data. Include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes.
+
+```{r}
+accel_df = read_csv(
+  "./data/accel_data.csv") %>%
+  janitor::clean_names() %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    names_prefix = "activity_",
+    values_to = "activity_count"
+    ) %>% 
+  mutate(
+    activity_count = round(activity_count, digits = 0)
+    ) %>% 
+  mutate(minute = as.integer(minute),
+         activity_count = as.integer(activity_count),
+         ) %>% 
+  mutate(day_type = case_when(
+    day %in% c("Saturday", "Sunday") ~ "Weekend",
+    day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday") ~ "Weekday")) %>% 
+  mutate(
+    day = ordered(
+      day, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", 
+                                      "Friday","Saturday", "Sunday"))
+    ) %>% 
+  arrange(week, day)
+```
+
+The dataset contains `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. There are several variables for time -- week, day id, day of the week, weekday/weekend, and the minute of the day. Also, there is a variable showing activity of the person in a specific minute. 
+
+
+##### Total activity over the day.
+
+```{r}
+accel_df %>% 
+  group_by(week, day) %>% 
+  summarize(
+    daily_activity = sum(activity_count)
+  ) %>% 
+  pivot_wider(
+    names_from = day,
+    values_from = daily_activity
+  ) %>% 
+  knitr::kable()
+```
+
+Throughout the 5 weeks, it seems that the person has steady activity counts during the weekdays, except for Monday in Week 1. The person was more active than usual on the Saturday of Week 1 and Week 2, and less active on the Saturday of Week 4 and Week 5.
+
+
+##### Make a single-panel plot that shows the 24-hour activity time courses for each day.
+
+```{r}
+accel_df %>% 
+  group_by(day_id) %>% 
+  ggplot(aes(x = minute, y = activity_count, color = day)) +
+  geom_point(alpha = 0.5) +
+  geom_line()
+```
+
+It seems that the person is more active around 10-12am, while less active at other time periods on Sundays in the week. Also, the person is active at Friday and Saturday nights.
+
+
 
 
 
